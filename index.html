@@ -3,130 +3,545 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>🔬 3D Lab Drying Oven Pro Simulator</title>
+<title>ProDry X9 — Laboratory Drying Oven | Professional Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
-
+  /* ═══════════════════════════════════════
+     DESIGN TOKENS
+  ═══════════════════════════════════════ */
   :root {
-    --accent: #ff6a00;
-    --accent2: #ffb347;
-    --heat: #ff4500;
-    --cool: #00cfff;
-    --bg: #0a0a0f;
-    --panel: rgba(16,18,28,0.92);
-    --border: rgba(255,106,0,0.3);
-    --text: #e8e0d0;
-    --green: #39ff14;
-    --mono: 'Share Tech Mono', monospace;
-    --display: 'Rajdhani', sans-serif;
+    --accent:   #ff6a00;
+    --accent2:  #ffb347;
+    --heat:     #ff4500;
+    --cool:     #00cfff;
+    --bg:       #0a0a0f;
+    --panel:    rgba(16,18,28,0.92);
+    --border:   rgba(255,106,0,0.3);
+    --text:     #e8e0d0;
+    --green:    #39ff14;
+    --muted:    #6b6b7a;
+    --surface:  #111118;
+    --mono:     'Share Tech Mono', monospace;
+    --display:  'Barlow Condensed', sans-serif;
+    --body:     'DM Mono', monospace;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
 
   body {
     background: var(--bg);
-    overflow: hidden;
-    font-family: var(--mono);
     color: var(--text);
-    cursor: crosshair;
-    user-select: none;
+    font-family: var(--body);
+    overflow-x: hidden;
+    cursor: default;
   }
 
-  canvas { display: block; width: 100vw; height: 100vh; }
+  /* ═══════════════════════════════════════
+     GLOBAL NAV
+  ═══════════════════════════════════════ */
+  #global-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px;
+    background: rgba(10,10,15,0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,106,0,0.15);
+  }
+  #global-nav .nav-logo {
+    font-family: var(--display);
+    font-size: 20px; font-weight: 900;
+    letter-spacing: 4px; color: var(--accent);
+    text-shadow: 0 0 18px rgba(255,106,0,0.5);
+  }
+  #global-nav .nav-logo span { color: #fff; }
+  .nav-links {
+    display: flex; gap: 28px; list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--display); font-size: 13px;
+    letter-spacing: 2px; color: #888;
+    text-decoration: none; font-weight: 600;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    padding: 8px 20px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    color: var(--accent);
+    font-family: var(--display); font-size: 12px;
+    font-weight: 700; letter-spacing: 2px;
+    cursor: pointer; transition: all 0.2s;
+    text-decoration: none;
+  }
+  .nav-cta:hover {
+    background: var(--accent); color: #000;
+    box-shadow: 0 0 20px rgba(255,106,0,0.4);
+  }
 
-  /* ── HUD OVERLAY ── */
+  /* ═══════════════════════════════════════
+     HERO SECTION
+  ═══════════════════════════════════════ */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 80px 32px 48px;
+    overflow: hidden;
+  }
+
+  /* Diagonal grid background */
+  #hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,106,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,106,0,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+  /* Orange glow blob */
+  #hero::after {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    background: radial-gradient(circle, rgba(255,106,0,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative; z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    max-width: 1280px; width: 100%;
+    align-items: center;
+  }
+
+  .hero-text {}
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 14px;
+    border: 1px solid rgba(255,106,0,0.35);
+    border-radius: 2px;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--accent); margin-bottom: 24px;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity:1; transform: scale(1); }
+    50% { opacity:0.5; transform: scale(0.7); }
+  }
+
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(48px, 7vw, 88px);
+    font-weight: 900; line-height: 0.92;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+  }
+  .hero-title .model {
+    display: block; color: var(--accent);
+    text-shadow: 0 0 40px rgba(255,106,0,0.4);
+  }
+  .hero-title .series {
+    display: block; color: #fff;
+  }
+
+  .hero-sub {
+    font-family: var(--display);
+    font-size: 16px; font-weight: 300;
+    letter-spacing: 4px; color: var(--muted);
+    margin-bottom: 36px; margin-top: 14px;
+  }
+
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 1px; background: rgba(255,106,0,0.12);
+    border: 1px solid rgba(255,106,0,0.12);
+    border-radius: 4px; margin-bottom: 36px;
+    overflow: hidden;
+  }
+  .hero-stat {
+    background: var(--bg);
+    padding: 16px 12px; text-align: center;
+  }
+  .hero-stat .sv {
+    font-family: var(--display);
+    font-size: 28px; font-weight: 900;
+    color: var(--accent); line-height: 1;
+  }
+  .hero-stat .sl {
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--muted); margin-top: 4px;
+  }
+
+  .hero-actions {
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  .btn-primary {
+    padding: 14px 32px;
+    background: var(--accent);
+    border: none; border-radius: 3px;
+    color: #000; font-family: var(--display);
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 2px; cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-primary:hover {
+    background: var(--accent2);
+    box-shadow: 0 4px 30px rgba(255,106,0,0.5);
+    transform: translateY(-1px);
+  }
+  .btn-outline {
+    padding: 14px 32px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 3px;
+    color: #ccc; font-family: var(--display);
+    font-size: 14px; font-weight: 600;
+    letter-spacing: 2px; cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-outline:hover {
+    border-color: var(--accent); color: var(--accent);
+    box-shadow: 0 0 16px rgba(255,106,0,0.15);
+  }
+
+  /* Hero right — feature pills */
+  .hero-visual {
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .feature-pill {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 18px 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: border-color 0.2s, transform 0.2s;
+    animation: fade-in-right 0.6s ease forwards;
+    opacity: 0;
+  }
+  .feature-pill:hover {
+    border-color: rgba(255,106,0,0.6);
+    transform: translateX(4px);
+  }
+  .feature-pill:nth-child(1) { animation-delay: 0.1s; }
+  .feature-pill:nth-child(2) { animation-delay: 0.2s; }
+  .feature-pill:nth-child(3) { animation-delay: 0.3s; }
+  .feature-pill:nth-child(4) { animation-delay: 0.4s; }
+  .feature-pill:nth-child(5) { animation-delay: 0.5s; }
+
+  @keyframes fade-in-right {
+    from { opacity:0; transform: translateX(24px); }
+    to   { opacity:1; transform: translateX(0); }
+  }
+
+  .pill-icon {
+    font-size: 22px; line-height: 1; flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .pill-content {}
+  .pill-title {
+    font-family: var(--display);
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 1px; color: #fff;
+    margin-bottom: 3px;
+  }
+  .pill-desc {
+    font-size: 10px; color: var(--muted);
+    line-height: 1.6; letter-spacing: 0.5px;
+  }
+  .pill-badge {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 9px; letter-spacing: 1px;
+    color: var(--green); border: 1px solid rgba(57,255,20,0.3);
+    padding: 2px 8px; border-radius: 2px;
+  }
+
+  /* ═══════════════════════════════════════
+     SPECS SECTION
+  ═══════════════════════════════════════ */
+  #specs {
+    padding: 96px 32px;
+    background: var(--surface);
+    border-top: 1px solid rgba(255,106,0,0.1);
+    border-bottom: 1px solid rgba(255,106,0,0.1);
+  }
+  .section-header {
+    text-align: center; margin-bottom: 64px;
+  }
+  .section-label {
+    font-size: 10px; letter-spacing: 4px;
+    color: var(--accent); font-family: var(--mono);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 900; color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .section-sub {
+    font-size: 12px; color: var(--muted);
+    letter-spacing: 1px; margin-top: 10px;
+  }
+
+  .specs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px; max-width: 1280px; margin: 0 auto;
+    background: rgba(255,106,0,0.07);
+  }
+  .spec-card {
+    background: var(--surface);
+    padding: 28px 28px;
+    position: relative; overflow: hidden;
+    transition: background 0.2s;
+  }
+  .spec-card:hover { background: rgba(20,20,30,1); }
+  .spec-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+    transform: scaleY(0); transform-origin: top;
+    transition: transform 0.25s;
+  }
+  .spec-card:hover::before { transform: scaleY(1); }
+  .spec-cat {
+    font-size: 9px; letter-spacing: 3px;
+    color: var(--accent); font-family: var(--mono);
+    margin-bottom: 16px;
+  }
+  .spec-rows {}
+  .spec-row {
+    display: flex; justify-content: space-between;
+    align-items: baseline; gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-key {
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.5px; flex: 1;
+  }
+  .spec-val {
+    font-family: var(--display);
+    font-size: 15px; font-weight: 700;
+    color: #e8e0d0; letter-spacing: 0.5px;
+    text-align: right;
+  }
+  .spec-val.highlight { color: var(--accent); }
+
+  /* ═══════════════════════════════════════
+     SIMULATOR SECTION
+  ═══════════════════════════════════════ */
+  #simulator-section {
+    padding: 80px 32px 0;
+  }
+  .sim-header {
+    max-width: 1280px; margin: 0 auto 32px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .sim-title-block {}
+  .sim-label {
+    font-size: 10px; letter-spacing: 4px;
+    color: var(--accent); font-family: var(--mono);
+    margin-bottom: 8px;
+  }
+  .sim-title {
+    font-family: var(--display);
+    font-size: 36px; font-weight: 900;
+    color: #fff; letter-spacing: -0.5px;
+  }
+  .sim-tips {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .sim-tip {
+    font-size: 10px; letter-spacing: 1px;
+    color: var(--muted);
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+  }
+
+  /* Simulator wrapper */
+  .sim-wrapper {
+    position: relative;
+    width: 100%; height: 100vh;
+    background: #0a0a0f;
+    overflow: hidden;
+  }
+
+  /* ═══════════════════════════════════════
+     APPLICATIONS SECTION
+  ═══════════════════════════════════════ */
+  #applications {
+    padding: 96px 32px;
+    background: var(--bg);
+  }
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px; max-width: 1280px; margin: 0 auto;
+  }
+  .app-card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px; padding: 28px 22px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .app-card:hover {
+    border-color: rgba(255,106,0,0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .app-icon { font-size: 28px; margin-bottom: 14px; }
+  .app-name {
+    font-family: var(--display); font-size: 16px;
+    font-weight: 700; letter-spacing: 1px;
+    color: #fff; margin-bottom: 8px;
+  }
+  .app-desc { font-size: 11px; color: var(--muted); line-height: 1.7; }
+
+  /* ═══════════════════════════════════════
+     COMPLIANCE & FOOTER
+  ═══════════════════════════════════════ */
+  #compliance {
+    padding: 60px 32px;
+    background: var(--surface);
+    border-top: 1px solid rgba(255,106,0,0.1);
+  }
+  .compliance-inner {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; gap: 40px; flex-wrap: wrap;
+    align-items: center; justify-content: space-between;
+  }
+  .cert-badges { display: flex; gap: 12px; flex-wrap: wrap; }
+  .cert-badge {
+    padding: 8px 18px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 3px;
+    font-family: var(--display); font-size: 12px;
+    font-weight: 700; letter-spacing: 2px;
+    color: #888;
+  }
+  .compliance-text { font-size: 11px; color: var(--muted); max-width: 400px; line-height: 1.7; }
+
+  footer {
+    padding: 32px;
+    background: #050508;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .footer-inner {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: gap;
+  }
+  .footer-logo {
+    font-family: var(--display); font-size: 16px;
+    font-weight: 900; letter-spacing: 4px; color: var(--accent);
+  }
+  .footer-logo span { color: #555; }
+  .footer-copy { font-size: 10px; color: #333; letter-spacing: 1px; }
+
+  /* ═══════════════════════════════════════
+     THREE.JS HUD (inherited from original — scoped inside sim)
+  ═══════════════════════════════════════ */
+  .sim-wrapper canvas { display: block; width: 100% !important; height: 100% !important; }
+
   #hud {
-    position: fixed; inset: 0; pointer-events: none;
+    position: absolute; inset: 0; pointer-events: none;
     z-index: 10;
   }
-
-  /* Top bar */
   #topbar {
     position: absolute; top: 0; left: 0; right: 0;
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 18px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.75), transparent);
     pointer-events: none;
   }
   #topbar .logo {
-    font-family: var(--display);
-    font-size: 22px; font-weight: 700;
+    font-family: var(--display); font-size: 20px; font-weight: 700;
     letter-spacing: 3px; color: var(--accent);
-    text-shadow: 0 0 20px var(--accent);
+    text-shadow: 0 0 18px var(--accent);
   }
   #topbar .logo span { color: #fff; }
-  #topbar .tagline {
-    font-size: 10px; letter-spacing: 2px; color: #888;
-  }
+  #topbar .tagline { font-size: 9px; letter-spacing: 2px; color: #666; }
 
-  /* Performance overlay */
   #perf {
     position: absolute; top: 60px; left: 14px;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 6px; padding: 10px 14px;
-    font-size: 11px; line-height: 1.8;
-    min-width: 220px;
+    font-size: 11px; line-height: 1.8; min-width: 200px;
   }
   #perf .perf-row { display: flex; justify-content: space-between; gap: 20px; }
-  #perf .perf-label { color: #666; }
+  #perf .perf-label { color: #555; }
   #perf .perf-val { color: var(--green); font-weight: bold; }
   #perf .perf-val.hot { color: var(--accent); }
-  #perf .perf-val.warn { color: #ffcc00; }
 
-  /* Control panel (right side) */
   #controls {
     position: absolute; top: 10px; right: 14px;
     width: 260px; pointer-events: all;
   }
-
   .ctrl-panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px; margin-bottom: 10px;
-    overflow: hidden;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 10px; overflow: hidden;
   }
-
   .ctrl-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 10px 14px;
     background: rgba(255,106,0,0.1);
     border-bottom: 1px solid var(--border);
     cursor: pointer;
-    font-family: var(--display);
-    font-size: 13px; font-weight: 600;
-    letter-spacing: 1px;
-    color: var(--accent);
+    font-family: var(--display); font-size: 13px; font-weight: 600;
+    letter-spacing: 1px; color: var(--accent);
   }
   .ctrl-header .arrow { transition: transform 0.2s; }
   .ctrl-header.collapsed .arrow { transform: rotate(-90deg); }
-
   .ctrl-body { padding: 12px 14px; }
   .ctrl-body.hidden { display: none; }
-
   .ctrl-row {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 10px;
   }
-  .ctrl-row label { font-size: 11px; color: #aaa; }
+  .ctrl-row label { font-size: 11px; color: #888; }
   .ctrl-row .val { font-size: 12px; color: var(--accent2); min-width: 40px; text-align: right; }
 
   input[type=range] {
     -webkit-appearance: none; appearance: none;
-    width: 120px; height: 4px;
+    width: 110px; height: 4px;
     background: rgba(255,106,0,0.2);
     border-radius: 2px; outline: none; cursor: pointer;
   }
   input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
+    -webkit-appearance: none;
     width: 14px; height: 14px; border-radius: 50%;
     background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
-    cursor: pointer;
+    box-shadow: 0 0 8px var(--accent); cursor: pointer;
   }
 
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
-
   .btn {
     flex: 1; padding: 7px 8px;
     background: rgba(255,106,0,0.12);
@@ -143,26 +558,18 @@
   .btn.good { border-color: rgba(57,255,20,0.4); color: var(--green); }
   .btn.good:hover { background: rgba(57,255,20,0.15); }
 
-  /* Big temperature display */
-  #temp-display {
-    text-align: center; padding: 8px 0;
-  }
+  #temp-display { text-align: center; padding: 8px 0; }
   #temp-display .big-temp {
     font-family: var(--display); font-size: 48px; font-weight: 700;
-    color: var(--accent);
-    text-shadow: 0 0 30px rgba(255,106,0,0.8);
-    line-height: 1;
+    color: var(--accent); text-shadow: 0 0 28px rgba(255,106,0,0.8); line-height: 1;
   }
   #temp-display .temp-unit { font-size: 18px; color: #888; }
   #temp-display .temp-label { font-size: 10px; letter-spacing: 2px; color: #555; margin-top: 2px; }
 
-  /* Progress table */
   #progress-table {
     position: absolute; bottom: 14px; left: 14px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px; overflow: hidden;
-    min-width: 300px; pointer-events: none;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; min-width: 300px; pointer-events: none;
   }
   #progress-table .tbl-header {
     padding: 8px 14px;
@@ -171,31 +578,19 @@
     font-family: var(--display); font-size: 12px;
     letter-spacing: 2px; color: var(--accent);
   }
-  #progress-table table {
-    width: 100%; border-collapse: collapse;
-    font-size: 11px;
-  }
-  #progress-table th {
-    padding: 5px 10px; color: #555;
-    text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-  #progress-table td {
-    padding: 5px 10px; border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-  .prog-bar-cell { width: 80px; }
+  #progress-table table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  #progress-table th { padding: 5px 10px; color: #444; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  #progress-table td { padding: 5px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .prog-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
   .prog-fill { height: 100%; background: linear-gradient(to right, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.5s; }
 
-  /* Timer display */
   #timer-display {
     font-family: var(--display); font-size: 28px; font-weight: 700;
-    color: #fff; text-align: center; padding: 4px 0;
-    letter-spacing: 4px;
+    color: #fff; text-align: center; padding: 4px 0; letter-spacing: 4px;
   }
   #timer-display.running { color: var(--green); text-shadow: 0 0 15px rgba(57,255,20,0.6); }
   #timer-display.paused { color: #ffcc00; }
 
-  /* Notification toast */
   #toast {
     position: absolute; bottom: 80px; left: 50%;
     transform: translateX(-50%) translateY(100px);
@@ -203,40 +598,30 @@
     border: 1px solid var(--accent);
     border-radius: 6px; padding: 10px 20px;
     font-size: 12px; color: var(--accent2);
-    transition: transform 0.3s ease;
-    pointer-events: none;
+    transition: transform 0.3s ease; pointer-events: none;
   }
   #toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* Door indicator */
   #door-indicator {
     position: absolute; bottom: 14px; right: 14px;
-    background: var(--panel);
-    border: 1px solid var(--border);
+    background: var(--panel); border: 1px solid var(--border);
     border-radius: 8px; padding: 10px 16px;
     text-align: center; pointer-events: all; cursor: pointer;
   }
   #door-indicator .door-label { font-size: 10px; letter-spacing: 2px; color: #555; }
-  #door-indicator .door-status {
-    font-family: var(--display); font-size: 16px; font-weight: 600;
-    margin-top: 4px;
-  }
-  #door-indicator .door-status.open { color: #ff5555; text-shadow: 0 0 10px rgba(255,85,85,0.5); }
+  #door-indicator .door-status { font-family: var(--display); font-size: 16px; font-weight: 600; margin-top: 4px; }
+  #door-indicator .door-status.open  { color: #ff5555; text-shadow: 0 0 10px rgba(255,85,85,0.5); }
   #door-indicator .door-status.closed { color: var(--green); text-shadow: 0 0 10px rgba(57,255,20,0.5); }
 
-  /* Tooltip */
   #tooltip {
     position: absolute; pointer-events: none;
-    background: rgba(0,0,0,0.8);
-    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.8); border: 1px solid var(--border);
     border-radius: 4px; padding: 6px 10px;
-    font-size: 11px; color: var(--accent2);
-    display: none;
+    font-size: 11px; color: var(--accent2); display: none;
   }
 
-  /* Loading screen */
   #loading {
-    position: fixed; inset: 0; z-index: 1000;
+    position: absolute; inset: 0; z-index: 1000;
     background: #050508;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -244,258 +629,549 @@
   }
   #loading.fade { opacity: 0; pointer-events: none; }
   #loading .load-title {
-    font-family: var(--display); font-size: 36px; font-weight: 700;
+    font-family: var(--display); font-size: 32px; font-weight: 900;
     color: var(--accent); letter-spacing: 5px;
-    text-shadow: 0 0 40px rgba(255,106,0,0.6);
-    margin-bottom: 8px;
+    text-shadow: 0 0 40px rgba(255,106,0,0.5); margin-bottom: 6px;
   }
-  #loading .load-sub { font-size: 11px; letter-spacing: 3px; color: #444; margin-bottom: 40px; }
-  #loading .load-bar-outer {
-    width: 280px; height: 3px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 2px; overflow: hidden;
-  }
-  #loading .load-bar-inner {
-    height: 100%; width: 0%;
-    background: linear-gradient(to right, var(--accent), var(--accent2));
-    border-radius: 2px; transition: width 0.3s;
-  }
-  #loading .load-status { font-size: 11px; color: #555; margin-top: 12px; letter-spacing: 1px; }
+  #loading .load-sub { font-size: 10px; letter-spacing: 3px; color: #444; margin-bottom: 36px; }
+  #loading .load-bar-outer { width: 260px; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  #loading .load-bar-inner { height: 100%; width: 0%; background: linear-gradient(to right, var(--accent), var(--accent2)); transition: width 0.3s; }
+  #loading .load-status { font-size: 11px; color: #444; margin-top: 12px; letter-spacing: 1px; }
 
-  /* Mobile: squeeze controls */
-  @media (max-width: 600px) {
-    #controls { width: 200px; top: 50px; right: 8px; }
-    #progress-table { min-width: 220px; }
-    #perf { font-size: 10px; }
-    .btn { font-size: 10px; padding: 5px 6px; }
-    #temp-display .big-temp { font-size: 36px; }
-  }
-
-  /* Scanlines effect */
   #scanlines {
-    position: fixed; inset: 0; pointer-events: none; z-index: 5;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 3px,
-      rgba(0,0,0,0.08) 3px,
-      rgba(0,0,0,0.08) 4px
-    );
-    opacity: 0.4;
+    position: absolute; inset: 0; pointer-events: none; z-index: 5;
+    background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
+    opacity: 0.35;
   }
 
-  /* Theme selector dots */
   .theme-dots { display: flex; gap: 8px; }
-  .theme-dot {
-    width: 18px; height: 18px; border-radius: 50%;
-    cursor: pointer; border: 2px solid transparent;
-    transition: border-color 0.2s, transform 0.2s;
-  }
+  .theme-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
   .theme-dot:hover { transform: scale(1.2); }
   .theme-dot.active { border-color: #fff; }
 
-  /* Heat intensity glow on body */
-  body::before {
-    content: '';
-    position: fixed; inset: 0; pointer-events: none; z-index: 1;
-    background: radial-gradient(ellipse at 50% 50%, rgba(255,80,0,0) 0%, transparent 70%);
-    transition: background 1s;
+  /* ═══════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+    .nav-links { display: none; }
+    #controls { width: 200px; top: 50px; right: 8px; }
+    #progress-table { min-width: 200px; }
+    .btn { font-size: 10px; padding: 5px 6px; }
+    #temp-display .big-temp { font-size: 36px; }
+  }
+  @media (max-width: 600px) {
+    #global-nav { padding: 0 16px; }
+    #hero { padding: 80px 16px 40px; }
+    #specs, #applications { padding: 64px 16px; }
+    .hero-stats { grid-template-columns: 1fr 1fr 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- Loading Screen -->
-<div id="loading">
-  <div class="load-title">OVEN SIM PRO</div>
-  <div class="load-sub">LABORATORY DRYING SYSTEM v2.0</div>
-  <div class="load-bar-outer"><div class="load-bar-inner" id="loadBar"></div></div>
-  <div class="load-status" id="loadStatus">Initializing WebGL renderer…</div>
-</div>
+<!-- ═══════════════════════ GLOBAL NAV ═══════════════════════ -->
+<nav id="global-nav">
+  <div class="nav-logo">PRO<span>DRY</span> X9</div>
+  <ul class="nav-links">
+    <li><a href="#specs">SPECIFICATIONS</a></li>
+    <li><a href="drying oven.html" target="_blank">SIMULATOR</a></li>
+    <li><a href="#applications">APPLICATIONS</a></li>
+    <li><a href="#compliance">CERTIFICATIONS</a></li>
+  </ul>
+  <a href="drying oven.html" target="_blank" class="nav-cta">LAUNCH SIMULATOR</a>
 
-<!-- Scanline overlay -->
-<div id="scanlines"></div>
+</nav>
 
-<!-- Canvas -->
-<canvas id="canvas"></canvas>
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section id="hero">
+  <div class="hero-inner">
 
-<!-- HUD -->
-<div id="hud">
+    <div class="hero-text">
+      <div class="hero-badge">PROFESSIONAL LABORATORY EQUIPMENT</div>
+      <h1 class="hero-title">
+        <span class="model">ProDry X9</span>
+        <span class="series">Drying Oven</span>
+      </h1>
+      <p class="hero-sub">FORCED CONVECTION — SERIES II — PROFESSIONAL EDITION</p>
 
-  <!-- Top bar -->
-  <div id="topbar">
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="sv">250<span style="font-size:16px">°C</span></div>
+          <div class="sl">MAX TEMP</div>
+        </div>
+        <div class="hero-stat">
+          <div class="sv">±0.5</div>
+          <div class="sl">ACCURACY</div>
+        </div>
+        <div class="hero-stat">
+          <div class="sv">56<span style="font-size:16px">L</span></div>
+          <div class="sl">CAPACITY</div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a href="drying oven.html" target="_blank" class="btn-primary">▶ OPEN 3D SIMULATOR</a>
+        <a href="#specs" class="btn-outline">VIEW SPECS</a>
+      </div>
+
+    </div>
+
+    <div class="hero-visual">
+      <div class="feature-pill">
+        <div class="pill-icon">🌡️</div>
+        <div class="pill-content">
+          <div class="pill-title">MICROPROCESSOR PID CONTROL</div>
+          <div class="pill-desc">Dual-display digital controller with real-time temperature deviation feedback and ±0.5°C stability across the entire working range.</div>
+        </div>
+        <div class="pill-badge">ACTIVE</div>
+      </div>
+      <div class="feature-pill">
+        <div class="pill-icon">💨</div>
+        <div class="pill-content">
+          <div class="pill-title">VARIABLE SPEED FORCED CONVECTION</div>
+          <div class="pill-desc">Rear-mounted brushless fan with 0–100% speed control ensures uniform heat distribution across all three stainless steel shelves.</div>
+        </div>
+      </div>
+      <div class="feature-pill">
+        <div class="pill-icon">🔒</div>
+        <div class="pill-content">
+          <div class="pill-title">OVER-TEMPERATURE PROTECTION</div>
+          <div class="pill-desc">Independent safety thermostat with audible alarm automatically cuts power if chamber exceeds the programmed safety threshold.</div>
+        </div>
+        <div class="pill-badge">ISO 9001</div>
+      </div>
+      <div class="feature-pill">
+        <div class="pill-icon">🏗️</div>
+        <div class="pill-content">
+          <div class="pill-title">STAINLESS STEEL INTERIOR</div>
+          <div class="pill-desc">304-grade inner chamber with seamless corners for easy cleaning. Double-wall powder-coated steel exterior for chemical resistance.</div>
+        </div>
+      </div>
+      <div class="feature-pill">
+        <div class="pill-icon">📊</div>
+        <div class="pill-content">
+          <div class="pill-title">RS-232 / USB DATA LOGGING</div>
+          <div class="pill-desc">Export time-stamped temperature logs directly via USB or serial interface. Compatible with LIMS and standard lab data management software.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════ SPECIFICATIONS ═══════════════════════ -->
+<section id="specs">
+  <div class="section-header">
+    <div class="section-label">// TECHNICAL SPECIFICATIONS</div>
+    <h2 class="section-title">BUILT FOR PRECISION SCIENCE</h2>
+    <p class="section-sub">Full specification data for the ProDry X9 — Professional Laboratory Drying Oven</p>
+  </div>
+
+  <div class="specs-grid">
+
+    <div class="spec-card">
+      <div class="spec-cat">THERMAL PERFORMANCE</div>
+      <div class="spec-rows">
+        <div class="spec-row">
+          <span class="spec-key">Temperature Range</span>
+          <span class="spec-val highlight">Ambient +10°C → 250°C</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Temperature Accuracy</span>
+          <span class="spec-val">±0.5°C</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Uniformity (at 200°C)</span>
+          <span class="spec-val">±2.0°C</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Heat-up Time (to 200°C)</span>
+          <span class="spec-val">≤ 40 min</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Recovery Time</span>
+          <span class="spec-val">≤ 8 min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-cat">CHAMBER & DIMENSIONS</div>
+      <div class="spec-rows">
+        <div class="spec-row">
+          <span class="spec-key">Internal Volume</span>
+          <span class="spec-val highlight">56 Litres</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Inner Dimensions (W×H×D)</span>
+          <span class="spec-val">400×350×400 mm</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Outer Dimensions (W×H×D)</span>
+          <span class="spec-val">580×680×570 mm</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">No. of Shelves (standard)</span>
+          <span class="spec-val">3 (max 6)</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Max. Shelf Load</span>
+          <span class="spec-val">15 kg per shelf</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-cat">ELECTRICAL & POWER</div>
+      <div class="spec-rows">
+        <div class="spec-row">
+          <span class="spec-key">Rated Power</span>
+          <span class="spec-val highlight">1.8 kW</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Voltage</span>
+          <span class="spec-val">230 V / 50 Hz</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Heating Element</span>
+          <span class="spec-val">Sheathed Tubular</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Fan Motor</span>
+          <span class="spec-val">Brushless 24 V DC</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Fuse Rating</span>
+          <span class="spec-val">10 A / T</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-cat">CONTROL & DISPLAY</div>
+      <div class="spec-rows">
+        <div class="spec-row">
+          <span class="spec-key">Controller Type</span>
+          <span class="spec-val highlight">PID Microprocessor</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Display</span>
+          <span class="spec-val">Dual LED, 4-digit</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Sensor Type</span>
+          <span class="spec-val">Pt 100 RTD</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Timer Range</span>
+          <span class="spec-val">0 – 9999 min</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Data Interface</span>
+          <span class="spec-val">USB + RS-232</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-cat">SAFETY SYSTEMS</div>
+      <div class="spec-rows">
+        <div class="spec-row">
+          <span class="spec-key">Over-Temp Protection</span>
+          <span class="spec-val highlight">Independent thermostat</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Door Interlock</span>
+          <span class="spec-val">Magnetic seal + switch</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Alarm Output</span>
+          <span class="spec-val">Audible + Visual</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Protection Class</span>
+          <span class="spec-val">IP 21</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Exhaust Regulation</span>
+          <span class="spec-val">Adjustable vent valve</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-cat">CONSTRUCTION</div>
+      <div class="spec-rows">
+        <div class="spec-row">
+          <span class="spec-key">Inner Chamber</span>
+          <span class="spec-val highlight">304 Stainless Steel</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Outer Casing</span>
+          <span class="spec-val">Powder-coated steel</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Door Seal</span>
+          <span class="spec-val">High-temp silicone</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Insulation</span>
+          <span class="spec-val">Mineral fibre 50 mm</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-key">Net Weight</span>
+          <span class="spec-val">32 kg</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════ 3D SIMULATOR ═══════════════════════ -->
+<section id="simulator-section">
+  <div class="sim-header">
+    <div class="sim-title-block">
+      <div class="sim-label">// INTERACTIVE 3D SIMULATOR</div>
+      <h2 class="sim-title">EXPLORE THE PRODRY X9</h2>
+    </div>
+    <div class="sim-tips">
+      <span class="sim-tip">🖱 DRAG to orbit</span>
+      <span class="sim-tip">⚙️ SCROLL to zoom</span>
+      <span class="sim-tip">📦 ADD items to the chamber</span>
+      <span class="sim-tip">🔥 ADJUST temperature & fan</span>
+    </div>
+  </div>
+
+  <!-- ── SIMULATOR CONTAINER ── -->
+  <div class="sim-wrapper" id="simContainer">
+
+    <div id="loading">
+      <div class="load-title">PRODRY X9</div>
+      <div class="load-sub">INITIALISING 3D ENVIRONMENT</div>
+      <div class="load-bar-outer"><div class="load-bar-inner" id="loadBar"></div></div>
+      <div class="load-status" id="loadStatus">Loading WebGL renderer…</div>
+    </div>
+
+    <div id="scanlines"></div>
+    <canvas id="canvas"></canvas>
+
+    <div id="hud">
+      <div id="topbar">
+        <div>
+          <div class="logo">PRO<span>DRY</span> X9</div>
+          <div class="tagline">3D LABORATORY DRYING OVEN — INTERACTIVE SIMULATOR</div>
+        </div>
+        <div id="timer-display" class="paused">00:00:00</div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:#444;">BUILD 2025.07</div>
+          <div style="font-size:10px;color:#333;">THREE.JS r128</div>
+        </div>
+      </div>
+
+      <div id="perf">
+        <div class="perf-row"><span class="perf-label">FPS</span><span class="perf-val" id="pFps">60</span></div>
+        <div class="perf-row"><span class="perf-label">TRIANGLES</span><span class="perf-val" id="pTris">0</span></div>
+        <div class="perf-row"><span class="perf-label">DRAW CALLS</span><span class="perf-val" id="pCalls">0</span></div>
+        <div class="perf-row"><span class="perf-label">MEM (MB)</span><span class="perf-val" id="pMem">--</span></div>
+        <div class="perf-row"><span class="perf-label">MODE</span><span class="perf-val" id="pMode">DESKTOP</span></div>
+      </div>
+
+      <div id="controls">
+        <div class="ctrl-panel">
+          <div class="ctrl-header" onclick="togglePanel(this)">🔥 HEAT CONTROL <span class="arrow">▼</span></div>
+          <div class="ctrl-body">
+            <div id="temp-display">
+              <div class="big-temp"><span id="bigTemp">25</span><span class="temp-unit">°C</span></div>
+              <div class="temp-label">CHAMBER TEMPERATURE</div>
+            </div>
+            <div class="ctrl-row">
+              <label>TARGET TEMP</label>
+              <input type="range" id="tempSlider" min="20" max="250" value="25" oninput="setTemp(this.value)">
+              <span class="val" id="tempVal">25°C</span>
+            </div>
+            <div class="ctrl-row">
+              <label>FAN SPEED</label>
+              <input type="range" id="fanSlider" min="0" max="100" value="50" oninput="setFan(this.value)">
+              <span class="val" id="fanVal">50%</span>
+            </div>
+            <div class="ctrl-row">
+              <label>HUMIDITY</label>
+              <input type="range" id="humSlider" min="0" max="100" value="60" oninput="setHum(this.value)">
+              <span class="val" id="humVal">60%</span>
+            </div>
+            <div class="btn-row" style="margin-top:8px;">
+              <button class="btn good" id="btnStart" onclick="toggleSim()">▶ START</button>
+              <button class="btn" onclick="resetSim()">⟳ RESET</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ctrl-panel">
+          <div class="ctrl-header" onclick="togglePanel(this)">📦 LOAD ITEMS <span class="arrow">▼</span></div>
+          <div class="ctrl-body">
+            <div class="btn-row">
+              <button class="btn" onclick="addItem('rack')">+ RACK</button>
+              <button class="btn" onclick="addItem('herb')">+ HERB</button>
+              <button class="btn" onclick="addItem('soil')">+ SOIL</button>
+            </div>
+            <div class="btn-row" style="margin-top:8px;">
+              <button class="btn" onclick="addItem('ceramic')">+ CERAMIC</button>
+              <button class="btn" onclick="addItem('pcb')">+ PCB</button>
+            </div>
+            <div class="btn-row" style="margin-top:8px;">
+              <button class="btn danger" onclick="clearItems()">✕ CLEAR ALL</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ctrl-panel">
+          <div class="ctrl-header" onclick="togglePanel(this)">🚪 CHAMBER <span class="arrow">▼</span></div>
+          <div class="ctrl-body">
+            <div class="btn-row">
+              <button class="btn" id="btnDoor" onclick="toggleDoor()">DOOR: CLOSED</button>
+              <button class="btn" onclick="resetCamera()">⟲ VIEW</button>
+            </div>
+            <div class="btn-row" style="margin-top:8px;">
+              <button class="btn" id="btnWireframe" onclick="toggleWireframe()">WIREFRAME</button>
+              <button class="btn" onclick="toggleXray()">X-RAY</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ctrl-panel">
+          <div class="ctrl-header" onclick="togglePanel(this)">🎨 THEME <span class="arrow">▼</span></div>
+          <div class="ctrl-body">
+            <div class="theme-dots">
+              <div class="theme-dot active" style="background:#ff6a00" onclick="applyTheme('industrial',event)" title="Industrial"></div>
+              <div class="theme-dot" style="background:#c0c8d4" onclick="applyTheme('laboratory',event)" title="Laboratory"></div>
+              <div class="theme-dot" style="background:#1a1a3e" onclick="applyTheme('night',event)" title="Night"></div>
+              <div class="theme-dot" style="background:#2d4a1e" onclick="applyTheme('bio',event)" title="Bio"></div>
+              <div class="theme-dot" style="background:#0a0f1e" onclick="applyTheme('cyber',event)" title="Cyber"></div>
+            </div>
+            <div style="font-size:10px;color:#444;margin-top:8px;" id="themeName">▶ INDUSTRIAL</div>
+          </div>
+        </div>
+
+        <div class="ctrl-panel">
+          <div class="ctrl-header" onclick="togglePanel(this)">💾 EXPORT <span class="arrow">▼</span></div>
+          <div class="ctrl-body">
+            <div class="btn-row">
+              <button class="btn" onclick="exportCSV()">CSV REPORT</button>
+              <button class="btn" onclick="exportScreenshot()">SCREENSHOT</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="progress-table">
+        <div class="tbl-header">📊 DRYING PROGRESS MONITOR</div>
+        <table>
+          <thead>
+            <tr><th>ITEM</th><th>PROGRESS</th><th>TIME</th><th>TEMP</th></tr>
+          </thead>
+          <tbody id="progressBody">
+            <tr><td colspan="4" style="text-align:center;color:#444;padding:12px;">No items loaded</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="door-indicator" onclick="toggleDoor()">
+        <div class="door-label">CHAMBER DOOR</div>
+        <div class="door-status closed" id="doorStatusBig">⬛ SEALED</div>
+      </div>
+
+      <div id="tooltip"></div>
+    </div>
+
+    <div id="toast"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ APPLICATIONS ═══════════════════════ -->
+<section id="applications">
+  <div class="section-header">
+    <div class="section-label">// USE CASES</div>
+    <h2 class="section-title">TRUSTED ACROSS INDUSTRIES</h2>
+    <p class="section-sub">The ProDry X9 is designed for demanding laboratory and industrial environments</p>
+  </div>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <div class="app-icon">🧪</div>
+      <div class="app-name">ANALYTICAL CHEMISTRY</div>
+      <div class="app-desc">Gravimetric analysis, moisture determination, and sample preparation requiring precise thermal conditioning at controlled temperatures.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-icon">🌿</div>
+      <div class="app-name">BOTANICAL & HERBALS</div>
+      <div class="app-desc">Low-temperature drying of plant material, herbs, and extracts. Preserves active compounds through gentle, uniform heat distribution.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-icon">🏗️</div>
+      <div class="app-name">MATERIALS TESTING</div>
+      <div class="app-desc">Pre-conditioning of polymer, composite, and ceramic specimens before mechanical testing per ASTM and ISO standards.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-icon">🖥️</div>
+      <div class="app-name">PCB & ELECTRONICS</div>
+      <div class="app-desc">Post-wave soldering moisture removal, conformal coating cure, and PCB bake-out to IPC-1601 pre-bake specifications.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-icon">🌍</div>
+      <div class="app-name">ENVIRONMENTAL SCIENCE</div>
+      <div class="app-desc">Soil moisture analysis, sediment drying, and sample archival for environmental monitoring and geotechnical laboratories.</div>
+    </div>
+    <div class="app-card">
+      <div class="app-icon">💊</div>
+      <div class="app-name">PHARMACEUTICAL</div>
+      <div class="app-desc">GMP-compatible drying of excipients, API validation samples, and glassware sterilisation in regulated production environments.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ COMPLIANCE ═══════════════════════ -->
+<section id="compliance">
+  <div class="compliance-inner">
     <div>
-      <div class="logo">OVEN<span>SIM</span> PRO</div>
-      <div class="tagline">3D LABORATORY DRYING SYSTEM — PROFESSIONAL EDITION</div>
+      <div class="section-label" style="text-align:left;margin-bottom:14px;">// CERTIFICATIONS & STANDARDS</div>
+      <div class="cert-badges">
+        <div class="cert-badge">CE</div>
+        <div class="cert-badge">ISO 9001</div>
+        <div class="cert-badge">ISO 17025</div>
+        <div class="cert-badge">IEC 61010-1</div>
+        <div class="cert-badge">RoHS</div>
+        <div class="cert-badge">WEEE</div>
+      </div>
     </div>
-    <div id="timer-display" class="paused">00:00:00</div>
-    <div style="text-align:right">
-      <div style="font-size:10px;color:#555;">BUILD 2025.06</div>
-      <div style="font-size:10px;color:#444;">THREE.JS r165</div>
+    <div class="compliance-text">
+      The ProDry X9 is manufactured in compliance with international laboratory equipment standards. All units ship with a factory calibration certificate and full documentation package including IQ/OQ protocols for regulated industries.
     </div>
   </div>
+</section>
 
-  <!-- Performance -->
-  <div id="perf">
-    <div class="perf-row"><span class="perf-label">FPS</span><span class="perf-val" id="pFps">60</span></div>
-    <div class="perf-row"><span class="perf-label">TRIANGLES</span><span class="perf-val" id="pTris">0</span></div>
-    <div class="perf-row"><span class="perf-label">DRAW CALLS</span><span class="perf-val" id="pCalls">0</span></div>
-    <div class="perf-row"><span class="perf-label">MEM (MB)</span><span class="perf-val" id="pMem">--</span></div>
-    <div class="perf-row"><span class="perf-label">MODE</span><span class="perf-val" id="pMode">DESKTOP</span></div>
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">PRO<span>DRY</span> X9 <span style="font-size:11px;font-weight:400;letter-spacing:2px;color:#333;margin-left:12px;">LABORATORY DRYING SYSTEMS</span></div>
+    <div class="footer-copy">© 2025 ProDry Laboratory Systems. All specifications subject to change without notice.</div>
   </div>
+</footer>
 
-  <!-- Controls -->
-  <div id="controls">
-
-    <!-- Temperature -->
-    <div class="ctrl-panel">
-      <div class="ctrl-header" onclick="togglePanel(this)">
-        🔥 HEAT CONTROL <span class="arrow">▼</span>
-      </div>
-      <div class="ctrl-body">
-        <div id="temp-display">
-          <div class="big-temp"><span id="bigTemp">25</span><span class="temp-unit">°C</span></div>
-          <div class="temp-label">CHAMBER TEMPERATURE</div>
-        </div>
-        <div class="ctrl-row">
-          <label>TARGET TEMP</label>
-          <input type="range" id="tempSlider" min="20" max="250" value="25" oninput="setTemp(this.value)">
-          <span class="val" id="tempVal">25°C</span>
-        </div>
-        <div class="ctrl-row">
-          <label>FAN SPEED</label>
-          <input type="range" id="fanSlider" min="0" max="100" value="50" oninput="setFan(this.value)">
-          <span class="val" id="fanVal">50%</span>
-        </div>
-        <div class="ctrl-row">
-          <label>HUMIDITY</label>
-          <input type="range" id="humSlider" min="0" max="100" value="60" oninput="setHum(this.value)">
-          <span class="val" id="humVal">60%</span>
-        </div>
-        <div class="btn-row" style="margin-top:8px;">
-          <button class="btn good" id="btnStart" onclick="toggleSim()">▶ START</button>
-          <button class="btn" onclick="resetSim()">⟳ RESET</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Items -->
-    <div class="ctrl-panel">
-      <div class="ctrl-header" onclick="togglePanel(this)">
-        📦 LOAD ITEMS <span class="arrow">▼</span>
-      </div>
-      <div class="ctrl-body">
-        <div class="btn-row">
-          <button class="btn" onclick="addItem('rack')">+ RACK</button>
-          <button class="btn" onclick="addItem('herb')">+ HERB</button>
-          <button class="btn" onclick="addItem('soil')">+ SOIL</button>
-        </div>
-        <div class="btn-row" style="margin-top:8px;">
-          <button class="btn" onclick="addItem('ceramic')">+ CERAMIC</button>
-          <button class="btn" onclick="addItem('pcb')">+ PCB</button>
-        </div>
-        <div class="btn-row" style="margin-top:8px;">
-          <button class="btn danger" onclick="clearItems()">✕ CLEAR ALL</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Door & View -->
-    <div class="ctrl-panel">
-      <div class="ctrl-header" onclick="togglePanel(this)">
-        🚪 CHAMBER <span class="arrow">▼</span>
-      </div>
-      <div class="ctrl-body">
-        <div class="btn-row">
-          <button class="btn" id="btnDoor" onclick="toggleDoor()">DOOR: CLOSED</button>
-          <button class="btn" onclick="resetCamera()">⟲ VIEW</button>
-        </div>
-        <div class="btn-row" style="margin-top:8px;">
-          <button class="btn" id="btnWireframe" onclick="toggleWireframe()">WIREFRAME</button>
-          <button class="btn" onclick="toggleXray()">X-RAY</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Theme -->
-    <div class="ctrl-panel">
-      <div class="ctrl-header" onclick="togglePanel(this)">
-        🎨 THEME <span class="arrow">▼</span>
-      </div>
-      <div class="ctrl-body">
-        <div class="theme-dots">
-          <div class="theme-dot active" style="background:#ff6a00" onclick="applyTheme('industrial')" title="Industrial"></div>
-          <div class="theme-dot" style="background:#e0e0f0" onclick="applyTheme('laboratory')" title="Laboratory"></div>
-          <div class="theme-dot" style="background:#1a1a3e" onclick="applyTheme('night')" title="Night"></div>
-          <div class="theme-dot" style="background:#2d4a1e" onclick="applyTheme('bio')" title="Bio"></div>
-          <div class="theme-dot" style="background:#1e1e2e" onclick="applyTheme('cyber')" title="Cyber"></div>
-        </div>
-        <div style="font-size:10px;color:#444;margin-top:8px;" id="themeName">▶ INDUSTRIAL</div>
-      </div>
-    </div>
-
-    <!-- Export -->
-    <div class="ctrl-panel">
-      <div class="ctrl-header" onclick="togglePanel(this)">
-        💾 EXPORT <span class="arrow">▼</span>
-      </div>
-      <div class="ctrl-body">
-        <div class="btn-row">
-          <button class="btn" onclick="exportCSV()">CSV REPORT</button>
-          <button class="btn" onclick="exportScreenshot()">SCREENSHOT</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Progress Table -->
-  <div id="progress-table">
-    <div class="tbl-header">📊 DRYING PROGRESS MONITOR</div>
-    <table>
-      <thead>
-        <tr>
-          <th>ITEM</th><th>PROGRESS</th><th>TIME</th><th>TEMP</th>
-        </tr>
-      </thead>
-      <tbody id="progressBody">
-        <tr><td colspan="4" style="text-align:center;color:#444;padding:12px;">No items loaded</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Door indicator -->
-  <div id="door-indicator" onclick="toggleDoor()">
-    <div class="door-label">CHAMBER DOOR</div>
-    <div class="door-status closed" id="doorStatusBig">⬛ SEALED</div>
-  </div>
-
-  <!-- Tooltip -->
-  <div id="tooltip"></div>
-
-</div>
-
-<!-- Toast -->
-<div id="toast"></div>
-
-<!-- Three.js & Cannon.js via CDN -->
+<!-- ═══════════════════════ THREE.JS ═══════════════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
 <script>
-// ═══════════════════════════════════════════════════════════
-//  DRYING OVEN SIMULATOR PRO — Core Engine
-// ═══════════════════════════════════════════════════════════
-
 'use strict';
 
-// ── Fake loading progress ──
+// ── Loading ──
 const loadSteps = [
-  'Initializing WebGL renderer…',
+  'Initialising WebGL renderer…',
   'Building oven geometry…',
   'Compiling GLSL shaders…',
-  'Setting up physics world…',
-  'Spawning convection particles…',
-  'Calibrating heat sensors…',
+  'Setting up convection system…',
+  'Spawning heat particles…',
+  'Calibrating thermal sensors…',
   'Ready.'
 ];
 let loadIdx = 0;
@@ -515,21 +1191,21 @@ function fakeLoad() {
 }
 fakeLoad();
 
-// ── Device detection ──
 const isMobile = 'ontouchstart' in window;
 document.getElementById('pMode').textContent = isMobile ? 'MOBILE' : 'DESKTOP';
 
-// ── Three.js Setup ──
+// ── Renderer ──
 const canvas = document.getElementById('canvas');
+const simContainer = document.getElementById('simContainer');
+
 const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: !isMobile,
+  canvas, antialias: !isMobile,
   powerPreference: isMobile ? 'low-power' : 'high-performance'
 });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(simContainer.clientWidth, simContainer.clientHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = isMobile ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
 
@@ -537,27 +1213,27 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a0f);
 scene.fog = new THREE.Fog(0x0a0a0f, 12, 35);
 
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.05, 100);
+const camera = new THREE.PerspectiveCamera(55, simContainer.clientWidth / simContainer.clientHeight, 0.05, 100);
 camera.position.set(3.5, 2.8, 3.5);
 camera.lookAt(0, 0.5, 0);
 
-// ── Simple orbit controls (no import) ──
+// ── Orbit ──
 let orbit = { theta: 0.65, phi: 1.05, radius: 5.5, targetX: 0, targetY: 0.5, targetZ: 0 };
 let dragging = false, lastMouse = { x: 0, y: 0 };
 let pinchDist = 0;
 
 canvas.addEventListener('mousedown', e => { dragging = true; lastMouse = { x: e.clientX, y: e.clientY }; });
-canvas.addEventListener('mouseup', () => dragging = false);
+canvas.addEventListener('mouseup',   () => dragging = false);
 canvas.addEventListener('mousemove', e => {
   if (!dragging) return;
   const dx = e.clientX - lastMouse.x, dy = e.clientY - lastMouse.y;
-  orbit.theta -= dx * 0.007; orbit.phi = Math.max(0.1, Math.min(Math.PI - 0.1, orbit.phi + dy * 0.007));
+  orbit.theta -= dx * 0.007;
+  orbit.phi = Math.max(0.1, Math.min(Math.PI - 0.1, orbit.phi + dy * 0.007));
   lastMouse = { x: e.clientX, y: e.clientY };
 });
 canvas.addEventListener('wheel', e => {
   orbit.radius = Math.max(1.5, Math.min(14, orbit.radius + e.deltaY * 0.01));
 });
-// Touch
 canvas.addEventListener('touchstart', e => {
   if (e.touches.length === 1) { dragging = true; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }
   if (e.touches.length === 2) { pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); }
@@ -567,7 +1243,8 @@ canvas.addEventListener('touchmove', e => {
   e.preventDefault();
   if (e.touches.length === 1 && dragging) {
     const dx = e.touches[0].clientX - lastMouse.x, dy = e.touches[0].clientY - lastMouse.y;
-    orbit.theta -= dx * 0.008; orbit.phi = Math.max(0.1, Math.min(Math.PI - 0.1, orbit.phi + dy * 0.008));
+    orbit.theta -= dx * 0.008;
+    orbit.phi = Math.max(0.1, Math.min(Math.PI - 0.1, orbit.phi + dy * 0.008));
     lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }
   if (e.touches.length === 2) {
@@ -585,321 +1262,194 @@ function updateCamera() {
 }
 
 // ── Lights ──
-const hemi = new THREE.HemisphereLight(0x87CEEB, 0x442211, 0.5);
-scene.add(hemi);
-
+scene.add(new THREE.HemisphereLight(0x87CEEB, 0x442211, 0.5));
 const sun = new THREE.DirectionalLight(0xfff5e0, 1.8);
-sun.position.set(6, 12, 6);
-sun.castShadow = true;
+sun.position.set(6, 12, 6); sun.castShadow = true;
 sun.shadow.mapSize.set(1024, 1024);
 sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 40;
 sun.shadow.camera.left = -8; sun.shadow.camera.right = 8;
 sun.shadow.camera.top = 8; sun.shadow.camera.bottom = -8;
 scene.add(sun);
-
 const fillLight = new THREE.DirectionalLight(0x4488ff, 0.4);
-fillLight.position.set(-5, 3, -3);
-scene.add(fillLight);
-
-// Interior heat glow (updated dynamically)
+fillLight.position.set(-5, 3, -3); scene.add(fillLight);
 const heatLight = new THREE.PointLight(0xff6600, 0, 3);
-heatLight.position.set(0, 0.5, 0);
 scene.add(heatLight);
 
-// ── Floor / Environment ──
+// ── Floor ──
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(24, 24),
-  new THREE.MeshStandardMaterial({ color: 0x111116, roughness: 0.9, metalness: 0.0 })
+  new THREE.MeshStandardMaterial({ color: 0x111116, roughness: 0.9 })
 );
-floor.rotation.x = -Math.PI / 2;
-floor.receiveShadow = true;
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
 scene.add(floor);
-
-// Grid lines on floor
 const grid = new THREE.GridHelper(24, 40, 0x1a1a2e, 0x111120);
-grid.position.y = 0.001;
-scene.add(grid);
+grid.position.y = 0.001; scene.add(grid);
 
-// Lab bench (table)
+// ── Bench ──
 function makeBox(w, h, d, color, rough = 0.7, metal = 0) {
   const m = new THREE.Mesh(
     new THREE.BoxGeometry(w, h, d),
     new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal })
   );
-  m.castShadow = true; m.receiveShadow = true;
-  return m;
+  m.castShadow = true; m.receiveShadow = true; return m;
 }
-
 const bench = makeBox(5, 0.08, 2.4, 0x2a2a35, 0.6, 0.1);
-bench.position.set(0, 0.79, 0);
-scene.add(bench);
+bench.position.set(0, 0.79, 0); scene.add(bench);
+[[−2.4,−1.1],[2.4,−1.1],[−2.4,1.1],[2.4,1.1]].forEach(([x,z]) => {
+  const leg = makeBox(0.08, 0.8, 0.08, 0x1a1a22);
+  leg.position.set(x, 0.4, z); scene.add(leg);
+});
 
-const leg1 = makeBox(0.08, 0.8, 0.08, 0x1a1a22); leg1.position.set(-2.4, 0.4, -1.1); scene.add(leg1);
-const leg2 = makeBox(0.08, 0.8, 0.08, 0x1a1a22); leg2.position.set(2.4, 0.4, -1.1); scene.add(leg2);
-const leg3 = makeBox(0.08, 0.8, 0.08, 0x1a1a22); leg3.position.set(-2.4, 0.4, 1.1); scene.add(leg3);
-const leg4 = makeBox(0.08, 0.8, 0.08, 0x1a1a22); leg4.position.set(2.4, 0.4, 1.1); scene.add(leg4);
-
-// ── BUILD THE DRYING OVEN ──
+// ── Oven ──
 const ovenGroup = new THREE.Group();
-scene.add(ovenGroup);
-ovenGroup.position.set(0, 0.83, 0);
+scene.add(ovenGroup); ovenGroup.position.set(0, 0.83, 0);
 
-// Oven materials
-const metalMat = new THREE.MeshStandardMaterial({ color: 0x888e99, roughness: 0.3, metalness: 0.85 });
+const metalMat  = new THREE.MeshStandardMaterial({ color: 0x888e99, roughness: 0.3, metalness: 0.85 });
 const darkMetal = new THREE.MeshStandardMaterial({ color: 0x1c1e25, roughness: 0.5, metalness: 0.7 });
-const glowMat = new THREE.MeshStandardMaterial({ color: 0xff5500, emissive: 0xff3300, emissiveIntensity: 0, roughness: 0.8 });
-const glassMat = new THREE.MeshStandardMaterial({ color: 0x223366, transparent: true, opacity: 0.35, roughness: 0.05, metalness: 0.1 });
-const panelMat = new THREE.MeshStandardMaterial({ color: 0x0d0f14, roughness: 0.7 });
+const glowMat   = new THREE.MeshStandardMaterial({ color: 0xff5500, emissive: 0xff3300, emissiveIntensity: 0, roughness: 0.8 });
+const glassMat  = new THREE.MeshStandardMaterial({ color: 0x223366, transparent: true, opacity: 0.35, roughness: 0.05, metalness: 0.1 });
+const panelMat  = new THREE.MeshStandardMaterial({ color: 0x0d0f14, roughness: 0.7 });
+const ledMat    = new THREE.MeshStandardMaterial({ color: 0x00ff88, emissive: 0x00ff88, emissiveIntensity: 0.8, roughness: 1 });
+const trayMat   = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.4, metalness: 0.7 });
+const interiorMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.5, metalness: 0.3, side: THREE.BackSide });
 
-// Outer body
-const body = makeBox(1.4, 1.0, 1.1, 0x737a86, 0.3, 0.8); body.material = metalMat;
-ovenGroup.add(body);
+const body = makeBox(1.4, 1.0, 1.1, 0x737a86, 0.3, 0.8);
+body.material = metalMat; ovenGroup.add(body);
 
-// Door frame
 const doorFrame = makeBox(0.72, 0.82, 0.04, 0x4e5460, 0.35, 0.75);
 doorFrame.position.set(-0.34, 0, 0.57);
-ovenGroup.add(doorFrame);
-
-// Door glass
 const doorGlass = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.72, 0.015), glassMat);
 doorGlass.position.set(-0.34, 0, 0.585);
-ovenGroup.add(doorGlass);
-
-// Door handle
-const handle = makeBox(0.04, 0.3, 0.04, 0x555, 0.1, 0.9);
+const handle = makeBox(0.04, 0.3, 0.04, 0x555555, 0.1, 0.9);
 handle.position.set(-0.04, 0, 0.61);
-ovenGroup.add(handle);
 
-// Door pivot group for animation
 const doorPivot = new THREE.Group();
 doorPivot.position.set(-0.72, 0, 0.55);
 doorPivot.add(doorFrame); doorPivot.add(doorGlass); doorPivot.add(handle);
-// Remove individually added and re-add under pivot
-ovenGroup.remove(doorFrame); ovenGroup.remove(doorGlass); ovenGroup.remove(handle);
 ovenGroup.add(doorPivot);
 
-// Control panel side
 const ctrlPanel = makeBox(0.62, 1.0, 0.04, 0x0d0f14, 0.7, 0.1);
-ctrlPanel.material = panelMat;
-ctrlPanel.position.set(0.39, 0, 0.57);
-ovenGroup.add(ctrlPanel);
+ctrlPanel.material = panelMat; ctrlPanel.position.set(0.39, 0, 0.57); ovenGroup.add(ctrlPanel);
 
-// LED display (emissive)
-const ledMat = new THREE.MeshStandardMaterial({ color: 0x00ff88, emissive: 0x00ff88, emissiveIntensity: 0.8, roughness: 1 });
 const led = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.1, 0.012), ledMat);
-led.position.set(0.39, 0.3, 0.577);
-ovenGroup.add(led);
+led.position.set(0.39, 0.3, 0.577); ovenGroup.add(led);
 
-// Knobs
 for (let i = 0; i < 3; i++) {
   const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.025, 12), metalMat);
-  knob.rotation.x = Math.PI / 2;
-  knob.position.set(0.24 + i * 0.16, 0.1, 0.585);
-  ovenGroup.add(knob);
+  knob.rotation.x = Math.PI / 2; knob.position.set(0.24 + i * 0.16, 0.1, 0.585); ovenGroup.add(knob);
 }
-
-// Ventilation slots (top)
 for (let i = -3; i <= 3; i++) {
   const slot = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.008, 0.6), darkMetal);
-  slot.position.set(i * 0.14, 0.505, 0.1);
-  ovenGroup.add(slot);
+  slot.position.set(i * 0.14, 0.505, 0.1); ovenGroup.add(slot);
 }
 
-// Interior chamber (visible inside through door)
-const interiorMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.5, metalness: 0.3, side: THREE.BackSide });
 const interior = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 0.85), interiorMat);
-interior.position.set(-0.12, 0, 0);
-ovenGroup.add(interior);
+interior.position.set(-0.12, 0, 0); ovenGroup.add(interior);
 
-// Heating elements (red coils sim)
 for (let y of [-0.28, 0.28]) {
   const elem = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.015, 0.04), glowMat);
-  elem.position.set(-0.12, y, -0.36);
-  ovenGroup.add(elem);
+  elem.position.set(-0.12, y, -0.36); ovenGroup.add(elem);
 }
 
-// Shelf supports / trays (3 trays)
-const trayMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.4, metalness: 0.7 });
 const trays = [];
 for (let i = 0; i < 3; i++) {
   const tray = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.012, 0.65), trayMat);
-  tray.position.set(-0.12, -0.25 + i * 0.25, 0);
-  ovenGroup.add(tray);
-  trays.push(tray);
+  tray.position.set(-0.12, -0.25 + i * 0.25, 0); ovenGroup.add(tray); trays.push(tray);
 }
 
-// Fan blades (back wall of oven)
 const fanGroup = new THREE.Group();
 fanGroup.position.set(-0.12, 0, -0.4);
 for (let i = 0; i < 4; i++) {
   const blade = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.03, 0.012), trayMat);
-  blade.rotation.z = (Math.PI / 2) * i;
-  fanGroup.add(blade);
+  blade.rotation.z = (Math.PI / 2) * i; fanGroup.add(blade);
 }
 ovenGroup.add(fanGroup);
-
-// Fan hub
 const fanHub = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.02, 12), metalMat);
-fanHub.rotation.x = Math.PI / 2; fanHub.position.set(-0.12, 0, -0.41);
-ovenGroup.add(fanHub);
+fanHub.rotation.x = Math.PI / 2; fanHub.position.set(-0.12, 0, -0.41); ovenGroup.add(fanHub);
 
-// Feet
-for (let x of [-0.6, 0.6]) {
-  for (let z of [-0.45, 0.45]) {
-    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.07, 8), darkMetal);
-    foot.position.set(x, -0.535, z);
-    ovenGroup.add(foot);
-  }
+for (const [x, z] of [[-0.6,-0.45],[-0.6,0.45],[0.6,-0.45],[0.6,0.45]]) {
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.07, 8), darkMetal);
+  foot.position.set(x, -0.535, z); ovenGroup.add(foot);
 }
 
-// ── CONVECTION PARTICLES ──
+// ── Particles ──
 const PARTICLE_COUNT = isMobile ? 500 : 1000;
 const partGeo = new THREE.BufferGeometry();
 const partPos = new Float32Array(PARTICLE_COUNT * 3);
 const partVel = new Float32Array(PARTICLE_COUNT * 3);
 const partLife = new Float32Array(PARTICLE_COUNT);
-
 for (let i = 0; i < PARTICLE_COUNT; i++) {
-  partPos[i * 3] = (Math.random() - 0.5) * 0.8 - 0.12;
-  partPos[i * 3 + 1] = (Math.random() - 0.5) * 0.7;
-  partPos[i * 3 + 2] = (Math.random() - 0.5) * 0.7;
-  partVel[i * 3] = (Math.random() - 0.5) * 0.3;
-  partVel[i * 3 + 1] = Math.random() * 0.5 + 0.2;
-  partVel[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+  partPos[i*3]   = (Math.random()-0.5)*0.8-0.12;
+  partPos[i*3+1] = (Math.random()-0.5)*0.7;
+  partPos[i*3+2] = (Math.random()-0.5)*0.7;
+  partVel[i*3]   = (Math.random()-0.5)*0.3;
+  partVel[i*3+1] = Math.random()*0.5+0.2;
+  partVel[i*3+2] = (Math.random()-0.5)*0.3;
   partLife[i] = Math.random();
 }
 partGeo.setAttribute('position', new THREE.BufferAttribute(partPos, 3));
-
-const partMat = new THREE.PointsMaterial({
-  color: 0xff8844, size: 0.012, transparent: true,
-  opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false
-});
+const partMat = new THREE.PointsMaterial({ color: 0xff8844, size: 0.012, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
 const particles = new THREE.Points(partGeo, partMat);
-particles.position.copy(ovenGroup.position);
-scene.add(particles);
+particles.position.copy(ovenGroup.position); scene.add(particles);
 
-// ── HEAT HAZE (post-process simulation via sprite) ──
+// ── Heat haze ──
 const hazeGeo = new THREE.PlaneGeometry(0.9, 0.85);
 const hazeMat = new THREE.ShaderMaterial({
-  transparent: true,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false,
-  uniforms: {
-    time: { value: 0 },
-    intensity: { value: 0 },
-    resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
-  },
-  vertexShader: `
-    varying vec2 vUv;
-    void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
-  `,
+  transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+  uniforms: { time: {value:0}, intensity: {value:0}, resolution: {value: new THREE.Vector2(simContainer.clientWidth, simContainer.clientHeight)} },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: `
     precision mediump float;
-    uniform float time;
-    uniform float intensity;
-    varying vec2 vUv;
+    uniform float time; uniform float intensity; varying vec2 vUv;
     float rand(vec2 n) { return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453); }
     float noise(vec2 p) {
-      vec2 ip = floor(p); vec2 u = fract(p);
-      u = u * u * (3.0 - 2.0 * u);
-      float a = rand(ip); float b = rand(ip + vec2(1.0, 0.0));
-      float c = rand(ip + vec2(0.0, 1.0)); float d = rand(ip + vec2(1.0, 1.0));
-      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+      vec2 ip = floor(p); vec2 u = fract(p); u = u*u*(3.0-2.0*u);
+      float a = rand(ip); float b = rand(ip+vec2(1,0)); float c = rand(ip+vec2(0,1)); float d = rand(ip+vec2(1,1));
+      return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);
     }
     void main() {
       vec2 uv = vUv;
-      float n = noise(uv * 6.0 + time * 0.6) * 0.5 + noise(uv * 12.0 + time * 1.1) * 0.25;
-      float alpha = n * intensity * 0.12 * (1.0 - length(uv - 0.5) * 2.0);
-      alpha = max(0.0, alpha);
-      vec3 col = vec3(1.0, 0.6, 0.2) * n + vec3(0.6, 0.3, 0.0) * (1.0 - n);
+      float n = noise(uv*6.0+time*0.6)*0.5 + noise(uv*12.0+time*1.1)*0.25;
+      float alpha = n*intensity*0.12*(1.0-length(uv-0.5)*2.0); alpha = max(0.0,alpha);
+      vec3 col = vec3(1.0,0.6,0.2)*n + vec3(0.6,0.3,0.0)*(1.0-n);
       gl_FragColor = vec4(col, alpha);
-    }
-  `
+    }`
 });
 const hazeQuad = new THREE.Mesh(hazeGeo, hazeMat);
-hazeQuad.position.set(-0.12, 0.83, 0.56);
-hazeQuad.renderOrder = 10;
-scene.add(hazeQuad);
+hazeQuad.position.set(-0.12, 0.83, 0.56); hazeQuad.renderOrder = 10; scene.add(hazeQuad);
 
-// ── SIMULATION STATE ──
-let simState = {
-  running: false,
-  temperature: 25,
-  targetTemp: 25,
-  fanSpeed: 50,
-  humidity: 60,
-  elapsed: 0,
-  doorOpen: false,
-  wireframe: false,
-  xray: false
-};
+// ── Sim state ──
+let simState = { running:false, temperature:25, targetTemp:25, fanSpeed:50, humidity:60, elapsed:0, doorOpen:false, wireframe:false, xray:false };
+let items = [], doorAngle = 0, doorTargetAngle = 0;
 
-let items = [];
-let doorAngle = 0;
-let doorTargetAngle = 0;
-
-// ── ITEM TYPES ──
 const ITEM_DEFS = {
-  rack: { label: 'Tray Rack', color: 0xaaaaaa, geo: () => new THREE.BoxGeometry(0.6, 0.02, 0.5), dryTime: 0, rough: 0.4, metal: 0.7 },
-  herb: { label: 'Herbs', color: 0x556b2f, geo: () => new THREE.SphereGeometry(0.06, 8, 6), dryTime: 1800, rough: 0.9, metal: 0 },
-  soil: { label: 'Soil Sample', color: 0x5c3a1e, geo: () => new THREE.CylinderGeometry(0.07, 0.07, 0.05, 10), dryTime: 3600, rough: 1, metal: 0 },
-  ceramic: { label: 'Ceramic', color: 0xd4b896, geo: () => new THREE.CylinderGeometry(0.05, 0.06, 0.1, 12), dryTime: 2400, rough: 0.7, metal: 0.1 },
-  pcb: { label: 'PCB Board', color: 0x1a5c2a, geo: () => new THREE.BoxGeometry(0.2, 0.005, 0.12), dryTime: 1200, rough: 0.6, metal: 0.3 }
+  rack:    { label:'Tray Rack',    color:0xaaaaaa, geo:()=>new THREE.BoxGeometry(0.6,0.02,0.5),      dryTime:0,    rough:0.4, metal:0.7 },
+  herb:    { label:'Herbs',        color:0x556b2f, geo:()=>new THREE.SphereGeometry(0.06,8,6),        dryTime:1800, rough:0.9, metal:0 },
+  soil:    { label:'Soil Sample',  color:0x5c3a1e, geo:()=>new THREE.CylinderGeometry(0.07,0.07,0.05,10), dryTime:3600, rough:1, metal:0 },
+  ceramic: { label:'Ceramic',      color:0xd4b896, geo:()=>new THREE.CylinderGeometry(0.05,0.06,0.1,12),  dryTime:2400, rough:0.7, metal:0.1 },
+  pcb:     { label:'PCB Board',    color:0x1a5c2a, geo:()=>new THREE.BoxGeometry(0.2,0.005,0.12),      dryTime:1200, rough:0.6, metal:0.3 }
 };
 
 function addItem(type) {
-  const def = ITEM_DEFS[type];
-  if (!def) return;
+  const def = ITEM_DEFS[type]; if (!def) return;
   const slotIdx = items.length % 9;
   const col = slotIdx % 3, row = Math.floor(slotIdx / 3);
-  const x = -0.28 + col * 0.22;
-  const z = -0.2 + row * 0.2;
-  const trayY = 0.83 + trays[Math.min(2, Math.floor(items.length / 3))].position.y + 0.02;
-
-  const mat = new THREE.MeshStandardMaterial({
-    color: def.color, roughness: def.rough, metalness: def.metal
-  });
+  const mat = new THREE.MeshStandardMaterial({ color: def.color, roughness: def.rough, metalness: def.metal });
   const mesh = new THREE.Mesh(def.geo(), mat);
-  mesh.position.set(x, trayY, z);
-  mesh.castShadow = true;
-  scene.add(mesh);
-
-  items.push({
-    mesh, type, label: def.label,
-    wetness: def.dryTime > 0 ? 1.0 : 0,
-    dryTime: def.dryTime,
-    elapsed: 0,
-    peakTemp: 0
-  });
-  updateProgressTable();
-  showToast(`+ ${def.label} added to chamber`);
+  mesh.position.set(-0.28 + col * 0.22, 0.83 + trays[Math.min(2, Math.floor(items.length / 3))].position.y + 0.02, -0.2 + row * 0.2);
+  mesh.castShadow = true; scene.add(mesh);
+  items.push({ mesh, type, label: def.label, wetness: def.dryTime > 0 ? 1.0 : 0, dryTime: def.dryTime, elapsed: 0, peakTemp: 0 });
+  updateProgressTable(); showToast(`+ ${def.label} added to chamber`);
 }
 
-function clearItems() {
-  items.forEach(it => scene.remove(it.mesh));
-  items = [];
-  updateProgressTable();
-  showToast('Chamber cleared');
-}
-
-// ── CONTROLS ──
-function setTemp(v) {
-  simState.targetTemp = parseFloat(v);
-  document.getElementById('tempVal').textContent = v + '°C';
-}
-function setFan(v) {
-  simState.fanSpeed = parseFloat(v);
-  document.getElementById('fanVal').textContent = v + '%';
-}
-function setHum(v) {
-  simState.humidity = parseFloat(v);
-  document.getElementById('humVal').textContent = v + '%';
-}
+function clearItems() { items.forEach(it => scene.remove(it.mesh)); items = []; updateProgressTable(); showToast('Chamber cleared'); }
+function setTemp(v) { simState.targetTemp = parseFloat(v); document.getElementById('tempVal').textContent = v + '°C'; }
+function setFan(v)  { simState.fanSpeed   = parseFloat(v); document.getElementById('fanVal').textContent  = v + '%'; }
+function setHum(v)  { simState.humidity   = parseFloat(v); document.getElementById('humVal').textContent  = v + '%'; }
 
 function toggleSim() {
   simState.running = !simState.running;
-  const btn = document.getElementById('btnStart');
-  const timer = document.getElementById('timer-display');
+  const btn = document.getElementById('btnStart'), timer = document.getElementById('timer-display');
   btn.textContent = simState.running ? '⏸ PAUSE' : '▶ START';
   btn.className = simState.running ? 'btn danger' : 'btn good';
   timer.className = simState.running ? 'running' : 'paused';
@@ -907,31 +1457,24 @@ function toggleSim() {
 }
 
 function resetSim() {
-  simState.running = false; simState.elapsed = 0;
-  simState.temperature = 25; simState.targetTemp = 25;
-  document.getElementById('tempSlider').value = 25;
-  document.getElementById('tempVal').textContent = '25°C';
-  document.getElementById('btnStart').textContent = '▶ START';
-  document.getElementById('btnStart').className = 'btn good';
+  simState.running = false; simState.elapsed = 0; simState.temperature = 25; simState.targetTemp = 25;
+  document.getElementById('tempSlider').value = 25; document.getElementById('tempVal').textContent = '25°C';
+  document.getElementById('btnStart').textContent = '▶ START'; document.getElementById('btnStart').className = 'btn good';
   document.getElementById('timer-display').className = 'paused';
   items.forEach(it => { it.elapsed = 0; it.wetness = it.dryTime > 0 ? 1.0 : 0; it.peakTemp = 0; });
-  updateProgressTable();
-  showToast('Simulation reset');
+  updateProgressTable(); showToast('Simulation reset');
 }
 
 function toggleDoor() {
   simState.doorOpen = !simState.doorOpen;
   doorTargetAngle = simState.doorOpen ? -Math.PI / 1.8 : 0;
-  const btn = document.getElementById('btnDoor');
-  btn.textContent = simState.doorOpen ? 'DOOR: OPEN' : 'DOOR: CLOSED';
+  document.getElementById('btnDoor').textContent = simState.doorOpen ? 'DOOR: OPEN' : 'DOOR: CLOSED';
   const big = document.getElementById('doorStatusBig');
   big.textContent = simState.doorOpen ? '🟥 OPEN' : '⬛ SEALED';
   big.className = 'door-status ' + (simState.doorOpen ? 'open' : 'closed');
 }
 
-function resetCamera() {
-  orbit.theta = 0.65; orbit.phi = 1.05; orbit.radius = 5.5;
-}
+function resetCamera() { orbit.theta = 0.65; orbit.phi = 1.05; orbit.radius = 5.5; }
 
 function toggleWireframe() {
   simState.wireframe = !simState.wireframe;
@@ -951,96 +1494,75 @@ function toggleXray() {
   glassMat.opacity = simState.xray ? 0.1 : 0.35;
 }
 
-// ── THEMES ──
 const themes = {
-  industrial: { bg: 0x0a0a0f, fog: 0x0a0a0f, floor: 0x111116, heat: 0xff6a00, ovenColor: 0x737a86, accent: '#ff6a00', name: 'INDUSTRIAL' },
-  laboratory: { bg: 0xdde8ee, fog: 0xdde8ee, floor: 0xe8ecf0, heat: 0x4488ff, ovenColor: 0xecf0f5, accent: '#0066cc', name: 'LABORATORY' },
-  night:      { bg: 0x050510, fog: 0x050510, floor: 0x080818, heat: 0x8822ff, ovenColor: 0x1a1a2a, accent: '#8822ff', name: 'NIGHT' },
-  bio:        { bg: 0x071209, fog: 0x071209, floor: 0x0a160c, heat: 0x44ff88, ovenColor: 0x1a3020, accent: '#39ff14', name: 'BIO' },
-  cyber:      { bg: 0x03050e, fog: 0x03050e, floor: 0x050a14, heat: 0x00e5ff, ovenColor: 0x0a0f1e, accent: '#00e5ff', name: 'CYBER' }
+  industrial: { bg:0x0a0a0f, fog:0x0a0a0f, floor:0x111116, heat:0xff6a00, ovenColor:0x737a86, accent:'#ff6a00', name:'INDUSTRIAL' },
+  laboratory: { bg:0xdde8ee, fog:0xdde8ee, floor:0xe8ecf0, heat:0x4488ff, ovenColor:0xecf0f5, accent:'#0066cc', name:'LABORATORY' },
+  night:      { bg:0x050510, fog:0x050510, floor:0x080818, heat:0x8822ff, ovenColor:0x1a1a2a, accent:'#8822ff', name:'NIGHT' },
+  bio:        { bg:0x071209, fog:0x071209, floor:0x0a160c, heat:0x44ff88, ovenColor:0x1a3020, accent:'#39ff14', name:'BIO' },
+  cyber:      { bg:0x03050e, fog:0x03050e, floor:0x050a14, heat:0x00e5ff, ovenColor:0x0a0f1e, accent:'#00e5ff', name:'CYBER' }
 };
 
-function applyTheme(name) {
+function applyTheme(name, e) {
   const t = themes[name]; if (!t) return;
-  scene.background = new THREE.Color(t.bg);
-  scene.fog.color = new THREE.Color(t.fog);
+  scene.background = new THREE.Color(t.bg); scene.fog.color = new THREE.Color(t.fog);
   floor.material.color.setHex(t.floor);
   document.documentElement.style.setProperty('--accent', t.accent);
-  heatLight.color.setHex(t.heat);
-  metalMat.color.setHex(t.ovenColor);
+  heatLight.color.setHex(t.heat); metalMat.color.setHex(t.ovenColor);
   document.getElementById('themeName').textContent = '▶ ' + t.name;
-  // Highlight active dot
   document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
-  event.target.classList.add('active');
+  if (e && e.target) e.target.classList.add('active');
 }
 
-// ── PROGRESS TABLE ──
 function updateProgressTable() {
   const tbody = document.getElementById('progressBody');
-  if (items.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#444;padding:12px;">No items loaded</td></tr>';
-    return;
-  }
+  if (!items.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#444;padding:12px;">No items loaded</td></tr>'; return; }
   tbody.innerHTML = items.map(it => {
-    const pct = it.dryTime > 0 ? Math.min(100, (1 - it.wetness) * 100).toFixed(0) : 100;
-    const mins = Math.floor(it.elapsed / 60), secs = Math.floor(it.elapsed % 60);
-    const timeStr = `${mins}m ${secs}s`;
+    const pct = it.dryTime > 0 ? Math.min(100,(1-it.wetness)*100).toFixed(0) : 100;
+    const mins = Math.floor(it.elapsed/60), secs = Math.floor(it.elapsed%60);
     const temp = it.peakTemp.toFixed(0);
-    return `<tr>
-      <td style="color:#aaa">${it.label}</td>
-      <td class="prog-bar-cell"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></td>
-      <td style="color:#888">${timeStr}</td>
-      <td style="color:${temp > 150 ? '#ff6a00' : '#888'}">${temp}°C</td>
-    </tr>`;
+    return `<tr><td style="color:#aaa">${it.label}</td><td style="width:80px"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></td><td style="color:#888">${mins}m ${secs}s</td><td style="color:${temp>150?'#ff6a00':'#888'}">${temp}°C</td></tr>`;
   }).join('');
 }
 
-// ── EXPORT ──
 function exportCSV() {
   let csv = 'Item,Type,Progress%,Elapsed(s),PeakTemp(C)\n';
   items.forEach(it => {
-    const pct = it.dryTime > 0 ? Math.min(100, (1 - it.wetness) * 100).toFixed(1) : '100';
+    const pct = it.dryTime > 0 ? Math.min(100,(1-it.wetness)*100).toFixed(1) : '100';
     csv += `"${it.label}","${it.type}",${pct},${it.elapsed.toFixed(0)},${it.peakTemp.toFixed(1)}\n`;
   });
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const blob = new Blob([csv],{type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'drying_report_' + Date.now() + '.csv'; a.click();
+  a.download = 'prodry_report_' + Date.now() + '.csv'; a.click();
   showToast('CSV report exported');
 }
 
 function exportScreenshot() {
   renderer.render(scene, camera);
   const a = document.createElement('a'); a.href = canvas.toDataURL('image/png');
-  a.download = 'oven_screenshot_' + Date.now() + '.png'; a.click();
+  a.download = 'prodry_screenshot_' + Date.now() + '.png'; a.click();
   showToast('Screenshot saved');
 }
 
-// ── TOAST ──
 let toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ── COLLAPSE PANELS ──
 function togglePanel(header) {
   header.classList.toggle('collapsed');
-  const body = header.nextElementSibling;
-  body.classList.toggle('hidden');
+  header.nextElementSibling.classList.toggle('hidden');
 }
 
-// ── ANIMATION LOOP ──
-let lastTime = 0;
-let frames = 0, fpsAccum = 0, lastFpsTime = 0;
+// ── Animation ──
+let lastTime = 0, frames = 0, fpsAccum = 0, lastFpsTime = 0;
 
 function animate(time) {
   requestAnimationFrame(animate);
-  const delta = Math.min((time - lastTime) * 0.001, 1 / 30);
+  const delta = Math.min((time - lastTime) * 0.001, 1/30);
   lastTime = time;
 
-  // FPS
   frames++; fpsAccum += delta;
   if (time - lastFpsTime > 800) {
     document.getElementById('pFps').textContent = Math.round(frames / fpsAccum);
@@ -1049,49 +1571,32 @@ function animate(time) {
     document.getElementById('pCalls').textContent = renderer.info.render.calls;
   }
 
-  // Door animation
   doorAngle += (doorTargetAngle - doorAngle) * 0.1;
   doorPivot.rotation.y = doorAngle;
 
-  // Heat simulation
   if (simState.running) {
     simState.elapsed += delta;
     simState.temperature += (simState.targetTemp - simState.temperature) * delta * 0.5;
+    const h = Math.floor(simState.elapsed/3600), m = Math.floor((simState.elapsed%3600)/60), s = Math.floor(simState.elapsed%60);
+    document.getElementById('timer-display').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 
-    // Timer display
-    const h = Math.floor(simState.elapsed / 3600);
-    const m = Math.floor((simState.elapsed % 3600) / 60);
-    const s = Math.floor(simState.elapsed % 60);
-    document.getElementById('timer-display').textContent =
-      `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-
-    // Drying items
     if (!simState.doorOpen && simState.temperature > 30) {
       items.forEach(it => {
         if (it.dryTime > 0 && it.wetness > 0) {
-          const dryRate = (simState.temperature / 250) * (simState.fanSpeed / 100) * delta * 0.5;
+          const dryRate = (simState.temperature/250) * (simState.fanSpeed/100) * delta * 0.5;
           it.wetness = Math.max(0, it.wetness - dryRate / it.dryTime * 60);
-          it.elapsed += delta;
-          it.peakTemp = Math.max(it.peakTemp, simState.temperature);
-          // Color shift as dries
-          const wet = it.wetness;
-          it.mesh.material.color.setRGB(
-            it.mesh.material.color.r * 0.9998 + (1 - wet) * 0.0002,
-            it.mesh.material.color.g * 0.9998,
-            it.mesh.material.color.b * 0.9998
-          );
+          it.elapsed += delta; it.peakTemp = Math.max(it.peakTemp, simState.temperature);
+          it.mesh.material.color.setRGB(it.mesh.material.color.r*0.9998+(1-it.wetness)*0.0002, it.mesh.material.color.g*0.9998, it.mesh.material.color.b*0.9998);
         }
       });
     }
     updateProgressTable();
   }
 
-  // Temperature display
   const t = simState.temperature;
   document.getElementById('bigTemp').textContent = t.toFixed(1);
 
-  // Heat effects scale with temperature
-  const heatIntensity = Math.max(0, (t - 30) / 220);
+  const heatIntensity = Math.max(0, (t-30)/220);
   heatLight.intensity = heatIntensity * 2.5;
   heatLight.position.copy(ovenGroup.position);
   glowMat.emissiveIntensity = heatIntensity * 1.5;
@@ -1100,88 +1605,40 @@ function animate(time) {
   partMat.opacity = simState.running ? heatIntensity * 0.65 : 0;
   ledMat.emissiveIntensity = 0.5 + heatIntensity * 0.8;
 
-  // Convection particles
   if (simState.running && heatIntensity > 0.05) {
     const pos = partGeo.attributes.position.array;
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       partLife[i] -= delta * 0.6;
       if (partLife[i] <= 0) {
-        pos[i * 3] = (Math.random() - 0.5) * 0.8 - 0.12;
-        pos[i * 3 + 1] = -0.3;
-        pos[i * 3 + 2] = (Math.random() - 0.5) * 0.6;
-        partLife[i] = 0.6 + Math.random() * 0.8;
+        pos[i*3] = (Math.random()-0.5)*0.8-0.12; pos[i*3+1] = -0.3; pos[i*3+2] = (Math.random()-0.5)*0.6;
+        partLife[i] = 0.6 + Math.random()*0.8;
       }
-      pos[i * 3] += partVel[i * 3] * delta * heatIntensity * 0.5;
-      pos[i * 3 + 1] += partVel[i * 3 + 1] * delta * heatIntensity;
-      pos[i * 3 + 2] += partVel[i * 3 + 2] * delta * heatIntensity * 0.5;
+      pos[i*3]   += partVel[i*3]   * delta * heatIntensity * 0.5;
+      pos[i*3+1] += partVel[i*3+1] * delta * heatIntensity;
+      pos[i*3+2] += partVel[i*3+2] * delta * heatIntensity * 0.5;
     }
     partGeo.attributes.position.needsUpdate = true;
   }
 
-  // Fan rotation
-  const fanRPM = simState.running ? simState.fanSpeed * 0.1 : 0;
-  fanGroup.rotation.z += delta * fanRPM;
-
-  // LED text (simulated segment display)
+  fanGroup.rotation.z += delta * (simState.running ? simState.fanSpeed * 0.1 : 0);
   const ledColor = t > 200 ? 0xff4400 : t > 100 ? 0xffaa00 : 0x00ff88;
-  ledMat.color.setHex(ledColor);
-  ledMat.emissive.setHex(ledColor);
+  ledMat.color.setHex(ledColor); ledMat.emissive.setHex(ledColor);
+  trays.forEach((tray, i) => { tray.rotation.z = Math.sin(time*0.001+i)*0.001; });
 
-  // Tray subtle sway
-  trays.forEach((tray, i) => {
-    tray.rotation.z = Math.sin(time * 0.001 + i) * 0.001;
-  });
-
-  // Update camera
   updateCamera();
-
   renderer.render(scene, camera);
 }
 
-// ── RESIZE ──
+// ── Resize ──
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  hazeMat.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+  const w = simContainer.clientWidth, h = simContainer.clientHeight;
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  hazeMat.uniforms.resolution.value.set(w, h);
 });
 
-// ── VISIBILITY PAUSE ──
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden && simState.running) { /* let RAF stop naturally */ }
-});
-
-// ── RAYCASTER FOR ITEM TOOLTIP ──
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-const tooltip = document.getElementById('tooltip');
-
-canvas.addEventListener('mousemove', e => {
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const meshes = items.map(i => i.mesh);
-  const hits = raycaster.intersectObjects(meshes);
-  if (hits.length) {
-    const idx = meshes.indexOf(hits[0].object);
-    const it = items[idx];
-    const pct = it.dryTime > 0 ? Math.min(100, (1 - it.wetness) * 100).toFixed(0) : 100;
-    tooltip.style.display = 'block';
-    tooltip.style.left = (e.clientX + 14) + 'px';
-    tooltip.style.top = (e.clientY - 10) + 'px';
-    tooltip.textContent = `${it.label} — ${pct}% dry | ${it.peakTemp.toFixed(0)}°C`;
-  } else {
-    tooltip.style.display = 'none';
-  }
-});
-
-// ── START ──
 requestAnimationFrame(animate);
-
-// Demo items on load
-setTimeout(() => {
-  addItem('rack'); addItem('herb'); addItem('soil');
-}, 1500);
+setTimeout(() => { addItem('rack'); addItem('herb'); addItem('soil'); }, 1500);
 </script>
 </body>
 </html>
